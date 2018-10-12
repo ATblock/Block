@@ -1,56 +1,79 @@
-# SGCE
-pragma solidity ^0.4.8;
+pragma solidity ^0.4.23;
 contract Token{
-    // token×ÜÁ¿£¬Ä¬ÈÏ»áÎªpublic±äÁ¿Éú³ÉÒ»¸ögetterº¯Êı½Ó¿Ú£¬Ãû³ÆÎªtotalSupply().
+    // tokenæ€»é‡ï¼Œé»˜è®¤ä¼šä¸ºpublicå˜é‡ç”Ÿæˆä¸€ä¸ªgetterå‡½æ•°æ¥å£ï¼Œåç§°ä¸ºtotalSupply().
     uint256 public totalSupply;
 
-    /// »ñÈ¡ÕË»§_ownerÓµÓĞtokenµÄÊıÁ¿ 
+    /// è·å–è´¦æˆ·_owneræ‹¥æœ‰tokençš„æ•°é‡ 
     function balanceOf(address _owner) constant returns (uint256 balance);
 
-    //´ÓÏûÏ¢·¢ËÍÕßÕË»§ÖĞÍù_toÕË»§×ªÊıÁ¿Îª_valueµÄtoken
+    //ä»æ¶ˆæ¯å‘é€è€…è´¦æˆ·ä¸­å¾€_toè´¦æˆ·è½¬æ•°é‡ä¸º_valueçš„token
     function transfer(address _to, uint256 _value) returns (bool success);
 
-    //´ÓÕË»§_fromÖĞÍùÕË»§_to×ªÊıÁ¿Îª_valueµÄtoken£¬Óëapprove·½·¨ÅäºÏÊ¹ÓÃ
+    //ä»è´¦æˆ·_fromä¸­å¾€è´¦æˆ·_toè½¬æ•°é‡ä¸º_valueçš„tokenï¼Œä¸approveæ–¹æ³•é…åˆä½¿ç”¨
     function transferFrom(address _from, address _to, uint256 _value) returns   
     (bool success);
 
-    //ÏûÏ¢·¢ËÍÕË»§ÉèÖÃÕË»§_spenderÄÜ´Ó·¢ËÍÕË»§ÖĞ×ª³öÊıÁ¿Îª_valueµÄtoken
+    //æ¶ˆæ¯å‘é€è´¦æˆ·è®¾ç½®è´¦æˆ·_spenderèƒ½ä»å‘é€è´¦æˆ·ä¸­è½¬å‡ºæ•°é‡ä¸º_valueçš„token
     function approve(address _spender, uint256 _value) returns (bool success);
 
-    //»ñÈ¡ÕË»§_spender¿ÉÒÔ´ÓÕË»§_ownerÖĞ×ª³ötokenµÄÊıÁ¿
+    //è·å–è´¦æˆ·_spenderå¯ä»¥ä»è´¦æˆ·_ownerä¸­è½¬å‡ºtokençš„æ•°é‡ 
     function allowance(address _owner, address _spender) constant returns 
     (uint256 remaining);
 
-    //·¢Éú×ªÕËÊ±±ØĞëÒª´¥·¢µÄÊÂ¼ş 
+    //å‘ç”Ÿè½¬è´¦æ—¶å¿…é¡»è¦è§¦å‘çš„äº‹ä»¶ 
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
 
-    //µ±º¯Êıapprove(address _spender, uint256 _value)³É¹¦Ö´ĞĞÊ±±ØĞë´¥·¢µÄÊÂ¼ş
+    //å½“å‡½æ•°approve(address _spender, uint256 _value)æˆåŠŸæ‰§è¡Œæ—¶å¿…é¡»è§¦å‘çš„äº‹ä»¶
     event Approval(address indexed _owner, address indexed _spender, uint256 
     _value);
 }
 
+library SafeMath {
+    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+        if (a == 0) {
+            return 0;
+        }
+        uint256 c = a * b;
+        assert(c / a == b);
+        return c;
+    }
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
+        // assert(b > 0); // Solidity automatically throws when dividing by 0
+        uint256 c = a / b;
+        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+        return c;
+    }
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+        assert(b <= a);
+        return a - b;
+    }
+    function add(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 c = a + b;
+        assert(c >= a);
+        return c;
+    }
+}
+
 contract StandardToken is Token {
+    using SafeMath for uint256;
     function transfer(address _to, uint256 _value) returns (bool success) {
-        //Ä¬ÈÏtotalSupply ²»»á³¬¹ı×î´óÖµ (2^256 - 1).
-        //Èç¹ûËæ×ÅÊ±¼äµÄÍÆÒÆ½«»áÓĞĞÂµÄtokenÉú³É£¬Ôò¿ÉÒÔÓÃÏÂÃæÕâ¾ä±ÜÃâÒç³öµÄÒì³£
-        //require(balances[msg.sender] >= _value && balances[_to] + _value > balances[_to]);
+        require(_to != address(0));
         require(balances[msg.sender] >= _value);
-        balances[msg.sender] -= _value;//´ÓÏûÏ¢·¢ËÍÕßÕË»§ÖĞ¼õÈ¥tokenÊıÁ¿_value
-        balances[_to] += _value;//Íù½ÓÊÕÕË»§Ôö¼ÓtokenÊıÁ¿_value
-        Transfer(msg.sender, _to, _value);//´¥·¢×ª±Ò½»Ò×ÊÂ¼ş
+        balances[msg.sender] = balances[msg.sender].sub(_value);//ä»æ¶ˆæ¯å‘é€è€…è´¦æˆ·ä¸­å‡å»tokenæ•°é‡_value
+        balances[_to] = balances[_to].add(_value);//å¾€æ¥æ”¶è´¦æˆ·å¢åŠ tokenæ•°é‡_value
+        Transfer(msg.sender, _to, _value);//è§¦å‘è½¬å¸äº¤æ˜“äº‹ä»¶
         return true;
     }
 
 
     function transferFrom(address _from, address _to, uint256 _value) returns 
     (bool success) {
-        //require(balances[_from] >= _value && allowed[_from][msg.sender] >= 
-        // _value && balances[_to] + _value > balances[_to]);
+        require(_to != address(0));
         require(balances[_from] >= _value && allowed[_from][msg.sender] >= _value);
-        balances[_to] += _value;//½ÓÊÕÕË»§Ôö¼ÓtokenÊıÁ¿_value
-        balances[_from] -= _value; //Ö§³öÕË»§_from¼õÈ¥tokenÊıÁ¿_value
-        allowed[_from][msg.sender] -= _value;//ÏûÏ¢·¢ËÍÕß¿ÉÒÔ´ÓÕË»§_fromÖĞ×ª³öµÄÊıÁ¿¼õÉÙ_value
-        Transfer(_from, _to, _value);//´¥·¢×ª±Ò½»Ò×ÊÂ¼ş
+        balances[_to] = balances[_to].add(_value);//æ¥æ”¶è´¦æˆ·å¢åŠ tokenæ•°é‡_value
+        balances[_from] = balances[_from].sub(_value); //æ”¯å‡ºè´¦æˆ·_fromå‡å»tokenæ•°é‡_value
+        allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);//æ¶ˆæ¯å‘é€è€…å¯ä»¥ä»è´¦æˆ·_fromä¸­è½¬å‡ºçš„æ•°é‡å‡å°‘_value
+        Transfer(_from, _to, _value);//è§¦å‘è½¬å¸äº¤æ˜“äº‹ä»¶
         return true;
     }
     function balanceOf(address _owner) constant returns (uint256 balance) {
@@ -60,6 +83,7 @@ contract StandardToken is Token {
 
     function approve(address _spender, uint256 _value) returns (bool success)   
     {
+        require((_value == 0) || (allowed[msg.sender][_spender] == 0));
         allowed[msg.sender][_spender] = _value;
         Approval(msg.sender, _spender, _value);
         return true;
@@ -67,31 +91,32 @@ contract StandardToken is Token {
 
 
     function allowance(address _owner, address _spender) constant returns (uint256 remaining) {
-        return allowed[_owner][_spender];//ÔÊĞí_spender´Ó_ownerÖĞ×ª³öµÄtokenÊı
+        return allowed[_owner][_spender];//å…è®¸_spenderä»_ownerä¸­è½¬å‡ºçš„tokenæ•°
     }
     mapping (address => uint256) balances;
     mapping (address => mapping (address => uint256)) allowed;
 }
 
-contract HumanStandardToken is StandardToken { 
+contract NiMingToken is StandardToken { 
 
     /* Public variables of the token */
-    string public name;                   //Ãû³Æ: eg Simon Bucks
-    uint8 public decimals;               //×î¶àµÄĞ¡ÊıÎ»Êı£¬How many decimals to show. ie. There could 1000 base units with 3 decimals. Meaning 0.980 SBX = 980 base units. It's like comparing 1 wei to 1 ether.
-    string public symbol;               //token¼ò³Æ: eg SBX
-    string public version = 'H0.1';    //°æ±¾
+    string public name;                   //åç§°: eg Simon Bucks
+    uint8 public decimals;               //æœ€å¤šçš„å°æ•°ä½æ•°ï¼ŒHow many decimals to show. ie. There could 1000 base units with 3 decimals. Meaning 0.980 SBX = 980 base units. It's like comparing 1 wei to 1 ether.
+    string public symbol;               //tokenç®€ç§°: eg SBX
+    string public version = 'H0.1';    //ç‰ˆæœ¬
 
-    function HumanStandardToken(uint256 _initialAmount, string _tokenName, uint8 _decimalUnits, string _tokenSymbol) {
-        balances[msg.sender] = _initialAmount; // ³õÊ¼tokenÊıÁ¿¸øÓèÏûÏ¢·¢ËÍÕß
-        totalSupply = _initialAmount;         // ÉèÖÃ³õÊ¼×ÜÁ¿
-        name = _tokenName;                   // tokenÃû³Æ
-        decimals = _decimalUnits;           // Ğ¡ÊıÎ»Êı
-        symbol = _tokenSymbol;             // token¼ò³Æ
+    function NiMingToken(uint256 _initialAmount, string _tokenName, uint8 _decimalUnits, string _tokenSymbol) {
+        balances[msg.sender] = _initialAmount; // åˆå§‹tokenæ•°é‡ç»™äºˆæ¶ˆæ¯å‘é€è€…
+        totalSupply = _initialAmount;         // è®¾ç½®åˆå§‹æ€»é‡
+        name = _tokenName;                   // tokenåç§°
+        decimals = _decimalUnits;           // å°æ•°ä½æ•°
+        symbol = _tokenSymbol;             // tokenç®€ç§°
     }
 
     /* Approves and then calls the receiving contract */
     
     function approveAndCall(address _spender, uint256 _value, bytes _extraData) returns (bool success) {
+        require((_value == 0) || (allowed[msg.sender][_spender] == 0));
         allowed[msg.sender][_spender] = _value;
         Approval(msg.sender, _spender, _value);
         //call the receiveApproval function on the contract you want to be notified. This crafts the function signature manually so one doesn't have to include a contract in here just for this.
